@@ -1,4 +1,5 @@
-# Coin Flip Telegram Web App | Приложение "Бросок Монеты" для Telegram
+
+# App for flipping a dishonest coin: Heads or Tails | Приложение "Бросок нечестной Монеты: Орел или Решка" для Telegram
 
 [English](#english) | [Русский](#russian)
 
@@ -155,3 +156,4 @@ git clone [your-repository-url]
 - Telegram Web App API за интеграцию
 - Google Fonts за типографику
 - Всех участников, которые помогли с проектом 
+
