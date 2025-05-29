@@ -525,12 +525,13 @@
             flipButton.disabled = true;
             result.textContent = '';
             
-            // Add flipping animation
-            coin.classList.add('flipping');
-            
             // Calculate result based on fairness
             const fairness = parseInt(fairnessSlider.value) / 100;
             const isHeads = Math.random() < fairness;
+            
+            // Add flipping animation with correct rotation
+            coin.style.transform = `rotateY(${isHeads ? 0 : 180}deg)`;
+            coin.classList.add('flipping');
             
             // Show result after animation
             setTimeout(() => {
