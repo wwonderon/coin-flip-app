@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coin Flip App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto+Slab:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #212121; /* Dark background */
+            --secondary-color: #FF0000; /* Bright accent - Red */
+            --accent-color: #00FF00; /* Another accent - Green */
+            --text-color: #E0E0E0; /* Light text */
+            --bg-color: #303030; /* Slightly lighter background */
+            --container-bg: #424242; /* Dark container */
+            --coin-gradient: radial-gradient(circle, #BDBDBD, #616161); /* Metal-like coin gradient */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace; /* Monospaced font for clarity */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            text-align: center;
+            padding: 80px 20px 20px 20px; /* Increased top padding, adjusted others */
+            background: var(--container-bg);
+            border-radius: 8px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            border: 2px solid var(--primary-color);
+            margin-top: 20px;
+        }
+
+        h1 {
+            font-family: 'Roboto Slab', serif;
+            font-size: 2.5em; /* Adjusted font size */
+            margin-bottom: 20px;
+            color: var(--secondary-color);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background-color: var(--accent-color);
+        }
+
+        .language-switch {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+            background: var(--primary-color);
+            padding: 3px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px; /* Adjusted margin */
+        }
+
+        .lang-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .lang-option.active {
+            background: var(--secondary-color); /* Active language highlighted */
+            color: var(--primary-color);
+        }
+
+        .lang-option:hover {
+            background: rgba(255, 0, 0, 0.3); /* Hover effect */
+        }
+
+        .lang-option.active:hover {
+             background: var(--secondary-color);
+             color: var(--primary-color);
+        }
+
+        .flag {
+            width: 18px;
+            height: 13px;
+            object-fit: cover;
+            border-radius: 1px;
+            border: 1px solid var(--text-color);
+        }
+
+        .coin {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto 10px auto; /* Adjusted margins */
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1s ease-in-out;
+            perspective: 1000px;
+        }
+
+        .coin-side {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--coin-gradient);
+            box-shadow: 0 0 25px rgba(0,0,0,0.4);
+            border: 3px solid #BDBDBD; /* Lighter metal border */
+            overflow: hidden; /* Hide image overflow */
+        }
+
+        .heads {
+            transform: rotateY(0deg);
+        }
+
+        .tails {
+            transform: rotateY(180deg);
+        }
+
+        .coin.flipping {
+            animation: flip 1s ease-in-out;
+        }
+
+        .coin-image {
+            width: 95%; /* Image slightly larger */
+            height: 95%; /* Image slightly larger */
+            object-fit: cover; /* Cover to fill */
+        }
+
+        .result {
+            font-family: 'Roboto Slab', serif;
+            font-size: 1.6em;
+            margin: 20px 0; /* Adjusted margin */
+            font-weight: 700;
+            color: var(--accent-color); /* Green result text */
+            min-height: 40px;
+        }
+
+        .controls {
+            margin: 5px 0 20px 0; /* Reduced top margin */
+            padding: 20px;
+            background: var(--primary-color);
+            border-radius: 6px;
+            width: 100%;
+            border: 1px dashed var(--text-color);
+            margin-top: 20px; /* Adjusted margin */
+        }
+
+        .fairness-value {
+            font-size: 1.1em;
+            margin: 0 0 15px 0;
+            color: var(--text-color);
+            font-weight: 400;
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            text-transform: uppercase;
+        }
+
+        .fairness-value span {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--accent-color); /* Green percentage */
+            margin-left: 8px;
+        }
+
+        .fairness-labels {
+            display: flex;
+            justify-content: space-between;
+            margin: 0 5px 5px 5px; /* Adjusted margin */
+            font-size: 0.9em;
+            color: var(--text-color);
+            font-weight: 400;
+            opacity: 0.9;
+            text-transform: uppercase;
+        }
+
+        .fairness-control {
+            width: 100%;
+            height: 10px; /* Thicker slider */
+            -webkit-appearance: none;
+            background: var(--bg-color); /* Darker track */
+            border-radius: 5px;
+            outline: none;
+            margin: 0;
+            border: 1px solid var(--primary-color);
+        }
+
+        .fairness-control::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 28px; /* Larger thumb */
+            height: 28px; /* Larger thumb */
+            background: var(--secondary-color); /* Red thumb */
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid var(--text-color); /* White border */
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        .fairness-control::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: var(--accent-color); /* Green on hover */
+            box-shadow: 0 0 12px rgba(0, 255, 0, 0.6);
+        }
+
+        .fairness-input {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0 0 0; /* More margin */
+        }
+
+        .fairness-input input {
+            width: 80px; /* Wider input */
+            padding: 10px;
+            border: 2px solid var(--secondary-color); /* Red border */
+            border-radius: 4px;
+            font-size: 1.2em; /* Larger font in input */
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+            background: var(--bg-color); /* Dark input background */
+            color: var(--text-color); /* Light text */
+        }
+
+        .fairness-input input:focus {
+            border-color: var(--accent-color); /* Green on focus */
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.4);
+        }
+
+        .fairness-input span {
+            font-size: 1.2em;
+            color: var(--text-color);
+            font-weight: 700;
+        }
+
+        button {
+            background: var(--secondary-color); /* Red button */
+            color: var(--primary-color); /* Dark text on button */
+            border: none;
+            padding: 15px 30px;
+            border-radius: 4px;
+            font-size: 1.5em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 6px 20px rgba(255, 0, 0, 0.3);
+            margin-top: 30px; /* Increased margin top */
+            border: 2px solid var(--primary-color);
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 0, 0, 0.4);
+            background: var(--accent-color); /* Green on hover */
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            background: var(--primary-color);
+            color: var(--text-color);
+            border-color: var(--text-color);
+        }
+
+        @keyframes flip {
+            0% {
+                transform: rotateY(0);
+            }
+            100% {
+                transform: rotateY(720deg);
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.8em;
+                margin-bottom: 5px; /* Further reduced bottom margin */
+            }
+
+            h1::after {
+                width: 60px;
+                height: 3px;
+            }
+
+            .container {
+                padding: 80px 20px 20px 20px;
+                margin-top: 20px;
+            }
+
+            .coin {
+                width: 150px;
+                height: 150px;
+                margin: 10px auto 10px auto; /* Reduced top margin */
+            }
+
+            .language-switch {
+                 top: 10px;
+                 right: 10px;
+                 gap: 5px;
+                 padding: 3px;
+                 margin-bottom: 20px;
+            }
+
+            .result {
+                font-size: 1.6em;
+                margin: 10px 0 10px 0;
+            }
+
+            .controls {
+                padding: 20px;
+                margin: 10px 0 10px 0;
+            }
+
+             .fairness-value {
+                font-size: 1em;
+                margin-bottom: 10px;
+             }
+
+             .fairness-value span {
+                font-size: 1.2em;
+             }
+
+             .fairness-labels {
+                 font-size: 0.8em;
+             }
+
+             .fairness-input input {
+                 width: 60px;
+                 font-size: 1em;
+             }
+
+             .fairness-input span {
+                 font-size: 1em;
+             }
+
+            button {
+                padding: 12px 24px;
+                font-size: 1.2em;
+                margin-top: 15px; /* Slightly reduced top margin */
+            }
+
+            button:active {
+                background: var(--accent-color); /* Green background on tap */
+                color: var(--primary-color);
+                transform: scale(0.95); /* Slightly shrink on tap */
+                box-shadow: 0 2px 10px rgba(0, 255, 0, 0.3); /* Reduced shadow on tap */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="language-switch">
+            <div class="lang-option active" data-lang="ru">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgNjAwIj48cGF0aCBmaWxsPSIjRkY5QTAwIiBkPSJNMCAwaDkwMHY2MDBIMHoiLz48cGF0aCBmaWxsPSIjMDAwMDk4IiBkPSJNMCAwaDkwMHY0MDBIMHoiLz48cGF0aCBmaWxsPSIjRkZGRkZGIiBkPSJNMCAwaDkwMHYyMDBIMHoiLz48L3N2Zz4=" class="flag" alt="RU">
+                Русский
+            </div>
+            <div class="lang-option" data-lang="en">
+                <img src="https://flagcdn.com/w40/gb.png" class="flag" alt="EN">
+                English
+            </div>
+        </div>
+        <h1 id="title">БРОСОК МОНЕТЫ</h1>
+        <div class="coin" id="coin">
+            <div class="coin-side heads">
+                <img src="images/orel.png" class="coin-image" alt="Heads">
+            </div>
+            <div class="coin-side tails">
+                <img src="images/reshka.png" class="coin-image" alt="Tails">
+            </div>
+        </div>
+        <div class="result" id="result"></div>
+        <div class="controls">
+            <div class="fairness-value" id="fairnessLabel">ВЕРОЯТНОСТЬ ОРЛА: <span id="fairnessValue">50</span>%</div>
+            <div class="fairness-labels">
+                <span>РЕШКА</span>
+                <span>ОРЁЛ</span>
+            </div>
+            <input type="range" class="fairness-control" id="fairnessSlider" min="0" max="100" value="50">
+            <div class="fairness-input">
+                <input type="number" id="fairnessInput" min="0" max="100" value="50">
+                <span>%</span>
+            </div>
+            <button id="flipButton">БРОСИТЬ МОНЕТУ</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        const coin = document.getElementById('coin');
+        const result = document.getElementById('result');
+        const flipButton = document.getElementById('flipButton');
+        const fairnessSlider = document.getElementById('fairnessSlider');
+        const fairnessValue = document.getElementById('fairnessValue');
+        const fairnessInput = document.getElementById('fairnessInput');
+        const title = document.getElementById('title');
+        const fairnessLabel = document.getElementById('fairnessLabel');
+        const langOptions = document.querySelectorAll('.lang-option');
+        let isFlipping = false;
+        let currentLang = 'ru';
+
+        const translations = {
+            en: {
+                title: 'COIN FLIP',
+                fairness: 'PROBABILITY OF HEADS:',
+                flipButton: 'FLIP COIN',
+                heads: 'HEADS!',
+                tails: 'TAILS!',
+                headsLabel: 'HEADS',
+                tailsLabel: 'TAILS'
+            },
+            ru: {
+                title: 'БРОСОК МОНЕТЫ',
+                fairness: 'ВЕРОЯТНОСТЬ ОРЛА:',
+                flipButton: 'БРОСИТЬ МОНЕТУ',
+                heads: 'ОРЁЛ!',
+                tails: 'РЕШКА!',
+                headsLabel: 'ОРЁЛ',
+                tailsLabel: 'РЕШКА'
+            }
+        };
+
+        function updateLanguage(lang) {
+            currentLang = lang;
+            const translation = translations[lang];
+            title.textContent = translation.title;
+            fairnessLabel.textContent = `${translation.fairness} `;
+            flipButton.textContent = translation.flipButton;
+            document.querySelector('.fairness-labels span:first-child').textContent = translation.tailsLabel;
+            document.querySelector('.fairness-labels span:last-child').textContent = translation.headsLabel;
+            if (result.textContent) {
+                result.textContent = result.textContent === translations['en'].heads || result.textContent === translations['ru'].heads
+                    ? translation.heads 
+                    : translation.tails;
+            }
+            
+            // Update active state of language options
+            langOptions.forEach(option => {
+                option.classList.toggle('active', option.dataset.lang === lang);
+            });
+        }
+
+        langOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                updateLanguage(option.dataset.lang);
+            });
+        });
+
+        // Update fairness value display and sync slider with input
+        function updateFairness(value) {
+            const validValue = Math.min(Math.max(parseInt(value) || 0, 0), 100);
+            fairnessValue.textContent = validValue;
+            fairnessSlider.value = validValue;
+            fairnessInput.value = validValue;
+        }
+
+        fairnessSlider.addEventListener('input', () => {
+            updateFairness(fairnessSlider.value);
+        });
+
+        fairnessInput.addEventListener('input', () => {
+            updateFairness(fairnessInput.value);
+        });
+
+        // Prevent non-numeric input
+        fairnessInput.addEventListener('keypress', (e) => {
+            if (!/[0-9]/.test(e.key)) {
+                e.preventDefault();
+            }
+        });
+
+        // Flip coin function
+        function flipCoin() {
+            if (isFlipping) return;
+            
+            isFlipping = true;
+            flipButton.disabled = true;
+            result.textContent = '';
+            
+            // Add flipping animation
+            coin.classList.add('flipping');
+            
+            // Calculate result based on fairness
+            const fairness = parseInt(fairnessSlider.value) / 100;
+            const isHeads = Math.random() < fairness;
+            
+            // Show result after animation
+            setTimeout(() => {
+                result.textContent = isHeads ? translations[currentLang].heads : translations[currentLang].tails;
+                coin.classList.remove('flipping');
+                isFlipping = false;
+                flipButton.disabled = false;
+            }, 1000);
+        }
+
+        // Add click event listener to flip button
+        flipButton.addEventListener('click', flipCoin);
+
+        // Initial language update
+        updateLanguage(currentLang);
+    </script>
+</body>
+</html> 
