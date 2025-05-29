@@ -1,5 +1,5 @@
 
-# App for flipping a dishonest coin: Heads or Tails | Приложение "Бросок нечестной Монеты: Орел или Решка" для Telegram
+# [EN] App for flipping a dishonest coin: Heads or Tails | [RU] Приложение "Бросок нечестной Монеты: Орел или Решка" для Telegram
 
 [English](#english) | [Русский](#russian)
 
